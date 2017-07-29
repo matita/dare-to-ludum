@@ -1,3 +1,5 @@
+import GameManager from '../entities/GameManager';
+
 const SCALE = 4;
 
 class Game extends Phaser.State {
@@ -20,31 +22,54 @@ class Game extends Phaser.State {
         var btnX = (this.game.width / 2) - (btnWidth / 2);
         var btnY = Math.floor(this.desk.y - 16*4 - 60);
 
-        this.createIdeaBtn(Math.floor(btnX + btnWidth*0/btns), btnY);
-        this.createCodeBtn(Math.floor(btnX + btnWidth*1/btns), btnY);
+        this.createIdeaBtn(Math.floor(btnX + btnWidth*0/btns), btnY, false);
+        this.createCodeBtn(Math.floor(btnX + btnWidth*1/btns), btnY, GameManager.ideas.length === 0);
         //this.game.state.start('coding');
     }
 
 
-    createIdeaBtn(x, y) {
-        this.ideaBtn = this.game.add.sprite(x, y, 'lamp');
-        this.ideaBtn.anchor.setTo(0.5, 0.5);
-        this.ideaBtn.smoothed = false;
-        this.ideaBtn.scale.set(SCALE, SCALE);
+    createStateBtn(x, y, key, onClick, clickContext, disabled) {
+        var btn = this.game.add.sprite(x, y, key);
+        btn.anchor.setTo(0.5, 0.5);
+        btn.smoothed = false;
+        btn.scale.set(SCALE, SCALE);
 
-        this.ideaBtn.inputEnabled = true;
-        this.ideaBtn.events.onInputDown.add(this.onIdeaClick, this);
+        if (disabled) {
+
+            btn.alpha = 0.2;
+
+        } else {
+
+            var inOver = false;
+
+            btn.inputEnabled = true;
+            btn.events.onInputOver.add(() => {
+                tween.start();
+                inOver = true;
+            });
+            btn.events.onInputOut.add(() => inOver = false);
+            btn.events.onInputDown.add(onClick, clickContext);
+
+            var tween = this.game.add.tween(btn);
+            tween.to({ y: y - 20 }, 300, Phaser.Easing.Cubic.Out, false, 0, 0, true);
+            tween.onComplete.add(() => { 
+                if (inOver)
+                    tween.start();
+            });
+
+        }
+        
+        return btn;
     }
 
 
-    createCodeBtn(x, y) {
-        this.codeBtn = this.game.add.sprite(x, y, 'keyboard');
-        this.codeBtn.anchor.setTo(0.5, 0.5);
-        this.codeBtn.smoothed = false;
-        this.codeBtn.scale.set(SCALE, SCALE);
+    createIdeaBtn(x, y, disabled) {
+        this.ideaBtn = this.createStateBtn(x, y, 'lamp', this.onIdeaClick, this, disabled);
+    }
 
-        this.codeBtn.inputEnabled = true;
-        this.codeBtn.events.onInputDown.add(this.onCodeClick, this);
+
+    createCodeBtn(x, y, disabled) {
+        this.codeBtn = this.createStateBtn(x, y, 'keyboard', this.onCodeClick, this, disabled);
     }
 
 

@@ -54,7 +54,7 @@ class Flappy extends Phaser.State {
     this.scoreText = this.game.add.text(10, 10, 'Score: ' + this.score, { fill: '#fff' });
     this.scoreText.fixedToCamera = true;
 
-    this.countDownText = this.game.add.text(Math.floor(this.game.width / 2), 100, '0', { font: "bold 32px Arial", fill: "#fff", boundsAlignH: "center" });
+    this.countDownText = this.game.add.text(Math.floor(this.game.width / 2), Math.floor(this.game.height / 5), '0', { font: "bold 32px Arial", fill: "#fff", boundsAlignH: "center" });
     this.countDownText.setShadow(0, 3, 'rgba(0,0,0,.5)', 0);
     this.countDownText.fixedToCamera = true;
 
