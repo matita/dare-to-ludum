@@ -32,6 +32,7 @@ class Preloader extends Phaser.State {
 
       this.load.audio('blip', './assets/blip.wav');
       this.load.audio('bird-lose', './assets/bird-lose.wav');
+      this.load.audio('1up', './assets/1up.wav');
   }
 
   onLoadComplete() {

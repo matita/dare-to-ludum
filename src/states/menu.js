@@ -1,3 +1,5 @@
+import GameManager from '../entities/GameManager';
+
 class Menu extends Phaser.State {
 
   constructor() {
@@ -17,6 +19,7 @@ class Menu extends Phaser.State {
   update() {}
 
   startGame () {
+    GameManager.init(this.game);
     this.game.state.start('game');
   }
 

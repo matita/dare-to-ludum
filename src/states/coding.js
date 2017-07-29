@@ -1,3 +1,5 @@
+import GameManager from '../entities/GameManager';
+
 const SCALE = 4;
 
 class Coding extends Phaser.State {
@@ -9,17 +11,31 @@ class Coding extends Phaser.State {
 
     create() {
 
-        this.game.stage.backgroundColor = '#25386f';
-
         this.presses = 0;
         this.isDown = false;
         this.minIntensity = 0.001;
         this.maxIntensity = 0.05;
         this.intensity = this.minIntensity;
         this.isResting = true;
+        this.isCompleted = false;
+
+        this.idea = GameManager.ideas.filter(i => i.devCompleted < i.devNeeded)[0];
+
+        this.audio = {
+            completedIdea: this.game.add.sound('1up')
+        };
         
         this.createDesk();
+        this.createGUI();
 
+    }
+
+
+    createGUI() {
+        this.ideaText = this.game.add.text(10, 10, 'Idea:', { fill: '#fff' });
+        this.ideaText.fixedToCamera = true;
+
+        this.updateText();
     }
 
 
@@ -48,7 +64,7 @@ class Coding extends Phaser.State {
 
     onDown() {
         
-        if (this.isDown)
+        if (this.isCompleted || this.isDown)
             return;
 
         this.isResting = false;
@@ -57,13 +73,31 @@ class Coding extends Phaser.State {
         const animationName = (this.presses % 2) ? 'left' : 'right';
         this.desk.animations.play(animationName);
         this.game.camera.shake(this.intensity, 100);
+        
+        if (GameManager.checkDev(this.idea, this.intensity*10))
+            this.completedIdea();
+        this.updateText();
 
     }
+
+
+    completedIdea() {
+        this.isCompleted = true;
+        this.audio.completedIdea.play();
+        this.time.events.add(Phaser.Timer.SECOND * 2, () => this.game.state.start('game'));
+    }
+
 
     onUp() {
         
         this.isDown = false;
 
+    }
+
+
+    updateText() {
+        this.ideaText.text = 'Idea: ' + this.idea.genre +
+            '\nCompleted: ' + Math.floor(this.idea.devCompleted / this.idea.devNeeded * 100) + '%';
     }
 
 

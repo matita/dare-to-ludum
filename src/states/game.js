@@ -11,6 +11,8 @@ class Game extends Phaser.State {
 
     create() {
 
+        this.game.stage.backgroundColor = '#25386f';
+
         this.desk = this.game.add.sprite(Math.floor(this.game.width / 2), Math.floor(this.game.height / 2), 'desk');
         this.desk.smoothed = false;
         this.desk.scale.set(SCALE, SCALE);
@@ -28,7 +30,7 @@ class Game extends Phaser.State {
     }
 
 
-    createStateBtn(x, y, key, onClick, clickContext, disabled) {
+    createStateBtn(x, y, key, onClick, clickContext, disabled, alwaysBouncing) {
         var btn = this.game.add.sprite(x, y, key);
         btn.anchor.setTo(0.5, 0.5);
         btn.smoothed = false;
@@ -44,18 +46,25 @@ class Game extends Phaser.State {
 
             btn.inputEnabled = true;
             btn.events.onInputOver.add(() => {
-                tween.start();
+                this.game.canvas.style.cursor = 'pointer';
+                if (!alwaysBouncing)
+                    tween.start();
                 inOver = true;
             });
-            btn.events.onInputOut.add(() => inOver = false);
+            btn.events.onInputOut.add(() => {
+                this.game.canvas.style.cursor = 'default';
+                inOver = false;
+            });
             btn.events.onInputDown.add(onClick, clickContext);
 
             var tween = this.game.add.tween(btn);
             tween.to({ y: y - 20 }, 300, Phaser.Easing.Cubic.Out, false, 0, 0, true);
             tween.onComplete.add(() => { 
-                if (inOver)
+                if (inOver || alwaysBouncing)
                     tween.start();
             });
+            if (alwaysBouncing)
+                tween.start();
 
         }
         
@@ -64,12 +73,14 @@ class Game extends Phaser.State {
 
 
     createIdeaBtn(x, y, disabled) {
-        this.ideaBtn = this.createStateBtn(x, y, 'lamp', this.onIdeaClick, this, disabled);
+        var isAlwaysBouncing = GameManager.ideas.length === 0;
+        this.ideaBtn = this.createStateBtn(x, y, 'lamp', this.onIdeaClick, this, disabled, isAlwaysBouncing);
     }
 
 
-    createCodeBtn(x, y, disabled) {
-        this.codeBtn = this.createStateBtn(x, y, 'keyboard', this.onCodeClick, this, disabled);
+    createCodeBtn(x, y) {
+        var isDisabled = GameManager.ideas.filter(i => i.devCompleted < i.devNeeded).length === 0;
+        this.codeBtn = this.createStateBtn(x, y, 'keyboard', this.onCodeClick, this, isDisabled);
     }
 
 

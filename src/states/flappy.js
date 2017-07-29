@@ -9,13 +9,7 @@ class Flappy extends Phaser.State {
   }
 
   create() {
-    /*var text = this.add.text(this.game.width * 0.5, this.game.height * 0.5, 'Game', {
-      font: '42px Arial', fill: '#ffffff', align: 'center'
-    });
-    text.anchor.set(0.5);*/
-
-    //this.input.onDown.add(this.endGame, this);
-
+    
     GameManager.lastIdea = 0;
 
     this.isPlaying = true;
@@ -36,7 +30,8 @@ class Flappy extends Phaser.State {
 
     this.audio = {
       blip: this.game.add.sound('blip'),
-      birdLose: this.game.add.sound('bird-lose')
+      birdLose: this.game.add.sound('bird-lose'),
+      foundIdea: this.game.add.sound('1up')
     };
 
     this.createCheckpoints();
@@ -160,15 +155,21 @@ class Flappy extends Phaser.State {
   onCheckPoint(bird, checkPoint) {
     checkPoint.kill();
     this.score++;
-    GameManager.checkNextIdea(this.score);
+    if (GameManager.checkNextIdea(this.score))
+      this.foundIdea();
     this.updateScore();
+  }
+
+
+  foundIdea() {
+    this.audio.foundIdea.play();
   }
 
 
   updateScore() {
     this.scoreText.text = 'Score: ' + this.score + 
+      '\nName: ' + (GameManager.name || '???') +
       '\nIdeas: ' + GameManager.ideas.length + 
-      '\nStep: ' + GameManager.step +
       '\nNext idea: ' + (GameManager.lastIdea + GameManager.step);
 
     this.countDownText.text = GameManager.lastIdea + GameManager.step - this.score;
