@@ -1,0 +1,7 @@
+{
+  "generator-phaser": {
+    "projectName": "dare-to-ludum",
+    "esVersion": 6,
+    "gameFolder": "boilerplate"
+  }
+}
