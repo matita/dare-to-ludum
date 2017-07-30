@@ -13,6 +13,8 @@ class Game extends Phaser.State {
 
         this.game.stage.backgroundColor = '#25386f';
 
+        GameManager.addIdea(5);
+
         this.desk = this.game.add.sprite(Math.floor(this.game.width / 2), Math.floor(this.game.height / 2), 'desk');
         this.desk.smoothed = false;
         this.desk.scale.set(SCALE, SCALE);

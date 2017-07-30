@@ -1,5 +1,8 @@
 const FLAPPIES = [
-    'Bird'
+    'Bird',
+    'Parrot',
+    'Sparrow',
+    'Fly'
 ];
 
 const NAMES = {
@@ -90,6 +93,9 @@ class GameManager {
     }
 
     pickGenre() {
+        if (this.availableIdeas.length === 0)
+            this.availableIdeas = Object.keys(NAMES);
+            
         const index = this.game.rnd.integerInRange(0, this.availableIdeas.length - 1);
         const genre = this.availableIdeas.splice(index, 1)[0];
         return genre;
@@ -104,7 +110,7 @@ class GameManager {
         } else {
             genre = this.pickGenre();
             const possibleNames = NAMES[genre];
-            const newName = possibleNames[this.game.rnd.integerInRange(0, possibleNames.length)];
+            const newName = possibleNames[this.game.rnd.integerInRange(0, possibleNames.length - 1)];
             this.name = newName.replace('_', this.name);
         }
 
