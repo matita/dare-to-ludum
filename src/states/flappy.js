@@ -1,6 +1,4 @@
-import GameManager from '../entities/GameManager';
-
-const SCALE = 4;
+import GameManager, { SCALE } from '../entities/GameManager';
 
 class Flappy extends Phaser.State {
 

@@ -1,6 +1,4 @@
-import GameManager from '../entities/GameManager';
-
-const SCALE = 4;
+import GameManager, { SCALE } from '../entities/GameManager';
 
 class Game extends Phaser.State {
 
@@ -13,7 +11,7 @@ class Game extends Phaser.State {
 
         this.game.stage.backgroundColor = '#25386f';
 
-        GameManager.addIdea(5);
+        //GameManager.addIdea(5);
 
         this.desk = this.game.add.sprite(Math.floor(this.game.width / 2), Math.floor(this.game.height / 2), 'desk');
         this.desk.smoothed = false;
@@ -26,8 +24,9 @@ class Game extends Phaser.State {
         var btnX = (this.game.width / 2) - (btnWidth / 2);
         var btnY = Math.floor(this.desk.y - 16*4 - 60);
 
-        this.createIdeaBtn(Math.floor(btnX + btnWidth*0/btns), btnY, false);
-        this.createCodeBtn(Math.floor(btnX + btnWidth*1/btns), btnY, GameManager.ideas.length === 0);
+        this.createIdeaBtn(Math.floor(btnX + btnWidth*0/btns), btnY);
+        this.createCodeBtn(Math.floor(btnX + btnWidth*1/btns), btnY);
+        this.createDrawBtn(Math.floor(btnX + btnWidth*2/btns), btnY);
         //this.game.state.start('coding');
     }
 
@@ -74,9 +73,9 @@ class Game extends Phaser.State {
     }
 
 
-    createIdeaBtn(x, y, disabled) {
+    createIdeaBtn(x, y) {
         var isAlwaysBouncing = GameManager.ideas.length === 0;
-        this.ideaBtn = this.createStateBtn(x, y, 'lamp', this.onIdeaClick, this, disabled, isAlwaysBouncing);
+        this.ideaBtn = this.createStateBtn(x, y, 'lamp', this.onIdeaClick, this, false, isAlwaysBouncing);
     }
 
 
@@ -86,12 +85,22 @@ class Game extends Phaser.State {
     }
 
 
+    createDrawBtn(x, y) {
+        var isDisabled = GameManager.ideas.filter(i => i.drawCompleted < i.drawNeeded).length === 0;
+        this.drawBtn = this.createStateBtn(x, y, 'draw', this.onDrawClick, this, isDisabled);
+    }
+
+
     onIdeaClick() {
         this.game.state.start('flappy');
     }
 
     onCodeClick() {
         this.game.state.start('coding');
+    }
+
+    onDrawClick() {
+        this.game.state.start('drawing');
     }
 
 

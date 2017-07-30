@@ -1,6 +1,4 @@
-import GameManager from '../entities/GameManager';
-
-const SCALE = 4;
+import GameManager, { SCALE } from '../entities/GameManager';
 
 class Coding extends Phaser.State {
 
@@ -73,7 +71,7 @@ class Coding extends Phaser.State {
 
     onDown() {
         
-        if (this.isCompleted || this.isDown)
+        if (this.isCompleted/* || this.isDown*/)
             return;
 
         this.isResting = false;
@@ -134,12 +132,18 @@ class Coding extends Phaser.State {
     updateBar() {
 
         const barWidth = 100;
-        const barHeight = 20;
+        const barHeight = 10;
+        const factCompleted = this.idea.devCompleted / this.idea.devNeeded;
         
         this.completionBar.beginFill(0xffffff, 1);
         this.completionBar.drawRect(0, 0, barWidth + SCALE * 2, barHeight + SCALE * 2);
+        this.completionBar.drawRect(0, barHeight + SCALE * 2 + barHeight, barWidth + SCALE*2, barHeight + SCALE*2);
+
+        this.completionBar.beginFill(0x00ff00, 1);
+        this.completionBar.drawRect(SCALE, SCALE, Math.floor(barWidth*factCompleted), barHeight);
+
         this.completionBar.beginFill(this.isDanger ? 0xff0000 : 0x00ff00, 1);
-        this.completionBar.drawRect(SCALE, SCALE, Math.floor(barWidth * this.factIntensity), barHeight);
+        this.completionBar.drawRect(SCALE, SCALE + barHeight + SCALE * 2 + barHeight, Math.floor(barWidth * this.factIntensity), barHeight);
         this.completionBar.endFill();
 
     }

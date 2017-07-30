@@ -1,3 +1,6 @@
+export const SCALE = 4;
+
+
 const FLAPPIES = [
     'Bird',
     'Parrot',
@@ -95,7 +98,7 @@ class GameManager {
     pickGenre() {
         if (this.availableIdeas.length === 0)
             this.availableIdeas = Object.keys(NAMES);
-            
+
         const index = this.game.rnd.integerInRange(0, this.availableIdeas.length - 1);
         const genre = this.availableIdeas.splice(index, 1)[0];
         return genre;
@@ -118,7 +121,9 @@ class GameManager {
             genre: genre,
             difficulty: difficulty,
             devNeeded: difficulty,
-            devCompleted: 0
+            devCompleted: 0,
+            drawNeeded: difficulty,
+            drawCompleted: 0
         });
     }
 
