@@ -57,7 +57,7 @@ class Flappy extends Phaser.State {
 
   createBird() {
       
-      this.bird = this.game.add.sprite(this.game.width / 2, this.game.height / 2, 'bird');
+      this.bird = this.game.add.sprite(this.game.width / 2 - 8*SCALE, this.game.height / 2, 'bird');
       this.bird.smoothed = false;
       this.bird.scale.setTo(SCALE, SCALE);
       this.game.physics.arcade.enable(this.bird, Phaser.Physics.ARCADE);

@@ -80,7 +80,26 @@ class GameManager {
         this.step = 5;
         this.lastIdea = 0;
         this.availableIdeas = Object.keys(NAMES);
+
+        this.timer = this.game.time.create();
+        this.deadlineEvent = this.timer.add(10*60*1000, this.deadline, this);
+        this.timer.start();
     }
+
+    asdf() {
+        console.log('asdf');
+    }
+
+
+    getRemainingMs() {
+        return this.deadlineEvent - this.timer.ms;
+    }
+
+
+    deadline() {
+        console.log('deadline!!!!');
+    }
+
 
     checkNextIdea(score) {
         if (score >= this.step + this.lastIdea) {
@@ -132,6 +151,17 @@ class GameManager {
         idea.devCompleted += value;
         if (idea.devCompleted >= idea.devNeeded) {
             idea.devCompleted = idea.devNeeded;
+            return true;
+        }
+
+        return false;
+    }
+
+
+    checkDraw(idea, value) {
+        idea.drawCompleted += value;
+        if (idea.drawCompleted >= idea.drawNeeded) {
+            idea.drawCompleted = idea.drawNeeded;
             return true;
         }
 

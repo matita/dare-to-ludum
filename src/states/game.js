@@ -18,16 +18,22 @@ class Game extends Phaser.State {
         this.desk.scale.set(SCALE, SCALE);
         this.desk.anchor.setTo(0.5, 0.5);
 
-        var btns = 4;
-        var btnDistance = 16*4*2;
+        var btns = 3;
+        var btnDistance = 16*SCALE*2;
         var btnWidth = (btns -1 ) * btnDistance;
-        var btnX = (this.game.width / 2) - (btnWidth / 2);
+        var btnX = (this.game.width / 2) - (btnWidth / 2) - btnDistance;
         var btnY = Math.floor(this.desk.y - 16*4 - 60);
 
-        this.createIdeaBtn(Math.floor(btnX + btnWidth*0/btns), btnY);
-        this.createCodeBtn(Math.floor(btnX + btnWidth*1/btns), btnY);
-        this.createDrawBtn(Math.floor(btnX + btnWidth*2/btns), btnY);
+        this.createIdeaBtn(Math.floor(btnX += btnDistance), btnY);
+        this.createCodeBtn(Math.floor(btnX += btnDistance), btnY);
+        this.createDrawBtn(Math.floor(btnX += btnDistance), btnY);
         //this.game.state.start('coding');
+
+        this.timerText = this.game.add.text(10, 10, '', { fill: '#fff' });
+        this.timerText.fixedToCamera = true;
+
+
+        GameManager.asdf();
     }
 
 
@@ -105,6 +111,10 @@ class Game extends Phaser.State {
 
 
     update() {
+
+        console.log('GameManager', GameManager);
+        if (GameManager.timer)
+            this.timerText.text = 'Duration: ' + GameManager.getRemainingMs();
 
     }
 
