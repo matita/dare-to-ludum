@@ -210,7 +210,7 @@ class Flappy extends Phaser.State {
 
       } else {
 
-        //this.game.physics.arcade.collide(this.bird, this.tubes, this.onCollision, null, this);
+        this.game.physics.arcade.collide(this.bird, this.tubes, this.onCollision, null, this);
         this.game.physics.arcade.overlap(this.bird, this.checkpoints, this.onCheckPoint, null, this);
         this.killPassedObjects();
 
