@@ -24,12 +24,18 @@ class Preloader extends Phaser.State {
 
   loadResources() {
       // load your resources here
+      this.load.image('logo', './assets/ld39-logo.png?v=0');
       this.load.spritesheet('lamp', './assets/ld39-lamp.png?v=0', 16, 16);
       this.load.spritesheet('keyboard', './assets/ld39-keyboard.png?v=1', 16, 16);
       this.load.spritesheet('draw', './assets/ld39-draw.png?v=1', 16, 16);
+      this.load.spritesheet('littlebed', './assets/ld39-littlebed.png?v=0', 16, 16);
       this.load.spritesheet('desk', './assets/ld39-desk.png?v=3', 32, 32);
       this.load.spritesheet('tube', './assets/ld39-tube.png?v=2', 8, 8);
       this.load.spritesheet('bird', './assets/ld39-bird.png?v=0', 8, 8);
+      this.load.spritesheet('bug', './assets/ld39-bug.png?v=0', 16, 16);
+      this.load.spritesheet('littlelamp', './assets/ld39-littlelamp.png?v=0', 8, 8);
+      this.load.spritesheet('bed', './assets/ld39-bed.png', 32, 32);
+      this.load.spritesheet('grave', './assets/ld39-grave.png?v=1', 32, 32);
 
       this.load.audio('blip', './assets/blip.wav');
       this.load.audio('bird-lose', './assets/bird-lose.wav');

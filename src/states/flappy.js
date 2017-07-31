@@ -23,6 +23,9 @@ class Flappy extends Phaser.State {
     this.upperBound = (this.game.height / 2) - (this.tubeHeight * this.tubeCount / 2);
     this.lowerBound = this.upperBound + this.tubeCount * this.tubeHeight; 
 
+    this.tubeNum = 0;
+    this.newIdeas = 0;
+
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
     this.game.physics.arcade.gravity.y = 800;
 
@@ -34,19 +37,21 @@ class Flappy extends Phaser.State {
 
     this.createCheckpoints();
     this.createTubes();
+    this.createLamp();
     this.createBird();
     this.createGUI();
     while (!this.lastTube || this.lastTube.x < this.game.width)
       this.createTube();
     
     this.input.onDown.add(this.jump, this);
+
+    GameManager.startTimer(0.5);
+    
   }
 
 
   createGUI() {
-    this.scoreText = this.game.add.text(10, 10, 'Score: ' + this.score, { fill: '#fff' });
-    this.scoreText.fixedToCamera = true;
-
+    
     this.countDownText = this.game.add.text(Math.floor(this.game.width / 2), Math.floor(this.game.height / 5), '0', { font: "bold 32px Arial", fill: "#fff", boundsAlignH: "center" });
     this.countDownText.setShadow(0, 3, 'rgba(0,0,0,.5)', 0);
     this.countDownText.fixedToCamera = true;
@@ -105,6 +110,7 @@ class Flappy extends Phaser.State {
       } else {
 
         var tube = this.tubes.getFirstDead(true, x, y, 'tube');
+        tube.scale.setTo(SCALE, SCALE);
         tube.revive();
         
         if (j < gapJ - 1 || j > gapJ + this.gapHeight + 1)
@@ -122,6 +128,31 @@ class Flappy extends Phaser.State {
 
       }
     }
+
+    this.tubeNum++;
+
+    if (this.tubeNum === GameManager.lastIdea + GameManager.step) {
+      this.lamp.revive();
+      this.lamp.x = Math.floor(x + this.tubeHeight / 2);
+      this.lamp.y = this.upperBound + (gapJ) * this.tubeHeight + this.gapHeight*this.tubeHeight / 2 + this.tubeHeight / 2;
+      this.lamp.body.velocity.x = -this.speed;
+    }
+
+  }
+
+  createLamp() {
+    
+    this.lamp = this.game.add.sprite(0, 0, 'littlelamp');
+    this.lamp.smoothed = false;
+    this.lamp.scale.setTo(SCALE, SCALE);
+    this.lamp.anchor.set(0.5, 0.5);
+    
+    this.game.physics.arcade.enable(this.lamp);
+    this.lamp.body.allowGravity = false;
+    this.lamp.body.immovable = true;
+
+    this.lamp.kill();
+
   }
 
 
@@ -160,16 +191,13 @@ class Flappy extends Phaser.State {
 
 
   foundIdea() {
+    this.newIdeas++;
     this.audio.foundIdea.play();
+    this.lamp.kill();
   }
 
 
   updateScore() {
-    this.scoreText.text = 'Score: ' + this.score + 
-      '\nName: ' + (GameManager.name || '???') +
-      '\nIdeas: ' + GameManager.ideas.length + 
-      '\nNext idea: ' + (GameManager.lastIdea + GameManager.step);
-
     this.countDownText.text = GameManager.lastIdea + GameManager.step - this.score;
   }
 
@@ -182,7 +210,7 @@ class Flappy extends Phaser.State {
 
       } else {
 
-        this.game.physics.arcade.collide(this.bird, this.tubes, this.onCollision, null, this);
+        //this.game.physics.arcade.collide(this.bird, this.tubes, this.onCollision, null, this);
         this.game.physics.arcade.overlap(this.bird, this.checkpoints, this.onCheckPoint, null, this);
         this.killPassedObjects();
 
@@ -210,6 +238,7 @@ class Flappy extends Phaser.State {
   stopAll() {
     this.tubes.forEachAlive(s => s.body.velocity.x = 0);
     this.checkpoints.forEachAlive(s => s.body.velocity.x = 0);
+    this.lamp.body.velocity.x = 0;
   }
 
   loseGame() {
@@ -220,8 +249,13 @@ class Flappy extends Phaser.State {
     this.stopAll();
     this.bird.body.velocity.y = -200;
     this.bird.body.angularVelocity = this.game.rnd.integerInRange(100, 200) * this.game.rnd.sign();
-    this.time.events.add(Phaser.Timer.SECOND * 2, () => this.game.state.start('game'));
+
+    this.time.events.add(Phaser.Timer.SECOND * 2, () => this.game.state.start(this.newIdeas !== 0 ? 'ideas' : 'game'));
     this.audio.birdLose.play();
+    
+    GameManager.stopTimer();
+
+    
   }
 
   endGame() {

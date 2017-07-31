@@ -1,4 +1,5 @@
 import GameManager, { SCALE } from '../entities/GameManager';
+import drawBar from '../utils/drawBar';
 
 class Coding extends Phaser.State {
 
@@ -9,11 +10,12 @@ class Coding extends Phaser.State {
 
     create() {
 
-        
         this.minIntensity = 0.001;
         this.maxIntensity = 0.01;
         this.wrongTapsForBug = 10;
         this.bugPenalty = 1;
+        this.barWidth = 100;
+        this.barHeight = 10;
 
         this.wrongTaps = 0;
         this.presses = 0;
@@ -23,6 +25,9 @@ class Coding extends Phaser.State {
         this.isResting = true;
         this.isCompleted = false;
 
+        this.game.physics.startSystem(Phaser.Physics.ARCADE);
+        this.game.physics.arcade.gravity.y = 800;
+
         this.idea = GameManager.ideas.filter(i => i.devCompleted < i.devNeeded)[0];
 
         this.audio = {
@@ -31,18 +36,64 @@ class Coding extends Phaser.State {
         };
         
         this.createDesk();
+        this.createBugs();
         this.createGUI();
+
+        GameManager.startTimer();
+        
 
     }
 
 
     createGUI() {
-        this.ideaText = this.game.add.text(10, 10, 'Idea:', { fill: '#fff' });
-        this.ideaText.fixedToCamera = true;
 
-        this.completionBar = this.game.add.graphics(10, 100);
+        this.instrText = this.game.add.text(
+            //Math.floor(this.game.width / 2 + this.sheetWidth*SCALE), 
+            //Math.floor(this.game.height / 2), 
+            0, 0,
+            'a\nb', { 
+                fill: '#fff',
+                align: 'center',
+                boundsAlignH: 'right',
+                boundsAlignV: 'middle'
+            });
+        //this.instrText.setTextBounds(this.sheet.x + this.sheet.width + 10, 0, this.game.width, this.game.height);
+        this.instrText.setTextBounds(0, Math.floor(this.desk.y - this.desk.height / 2), Math.floor(this.game.width / 2 - this.desk.width / 2 - 40), this.desk.height);
+        this.instrText.setShadow(0, 3, 'rgba(0,0,0,.5)', 0);
+        this.instrText.fixedToCamera = true;
+
+        this.completionBar = this.game.add.graphics(
+            Math.floor(this.game.width / 2 - this.barWidth / 2 - SCALE), 
+            Math.floor(this.game.height / 2 + this.desk.height - 20)
+        );
+
+        this.createStopBtn();
 
         this.updateText();
+    }
+
+
+    createStopBtn() {
+
+        const width = 150;
+        const height = 40;
+
+        this.stopBmp = this.game.make.bitmapData(width, height);
+        this.stopBmp.fill(255, 255, 255, 255);
+
+        this.stopBtn = this.game.add.sprite(Math.floor(this.game.width / 2 + this.desk.width), Math.floor(this.game.height / 2 - height / 2), this.stopBmp);
+        this.stopBtn.inputEnabled = true;
+        this.stopBtn.events.onInputOver.add(() => this.game.canvas.style.cursor = 'pointer');
+        this.stopBtn.events.onInputOut.add(() => this.game.canvas.style.cursor = 'default');
+        this.stopBtn.events.onInputDown.add(() => this.game.state.start('game'));
+
+        this.stopTxt = this.game.add.text(0, 0, 'Stop!', {
+            fill: '#333',
+            boundsAlignH: 'center',
+            boundsAlignV: 'middle'
+        });
+        this.stopTxt.setTextBounds(this.stopBtn.x, this.stopBtn.y + 2, this.stopBtn.width, this.stopBtn.height);
+
     }
 
 
@@ -63,6 +114,27 @@ class Coding extends Phaser.State {
     }
 
 
+    createBugs() {
+
+        this.bugs = this.game.add.group();
+
+        for (var i = 0; i < 10; i++) {
+            var bug = this.game.add.sprite(0, 0, 'bug');
+            bug.smoothed = false;
+            bug.scale.setTo(SCALE / 2, SCALE / 2);
+            bug.anchor.set(0.5, 0.5);
+            bug.outOfBoundsKill = true;
+            bug.outOfCameraBoundsKill = true;
+
+            this.game.physics.arcade.enable(bug);
+            bug.kill();
+
+            this.bugs.add(bug);
+        }
+
+    }
+
+
     rest() {
         this.desk.frame = 0;
         this.isResting = true;
@@ -79,7 +151,7 @@ class Coding extends Phaser.State {
         this.presses++;
         const animationName = (this.presses % 2) ? 'left' : 'right';
         this.desk.animations.play(animationName);
-        this.game.camera.shake(this.intensity, 100);
+        //this.game.camera.shake(this.intensity, 100);
 
         this.checkBug();
         
@@ -99,9 +171,18 @@ class Coding extends Phaser.State {
         if (this.wrongTaps >= this.wrongTapsForBug) {
             
             this.wrongTaps = 0;
-            this.idea.devCompleted -= this.bugPenalty;
-            if (this.devCompleted < 0)
+            this.idea.devCompleted -= this.bugPenalty * this.game.rnd.integerInRange(1, 3);
+            if (this.idea.devCompleted < 0)
                 this.idea.devCompleted = 0;
+
+            var bug = this.bugs.getFirstDead(/*true, 0, 0, 'bug'*/);
+            this.game.physics.arcade.enable(bug);
+            bug.revive();
+            bug.x = this.game.width / 2;
+            bug.y = this.game.height / 2;
+            bug.body.velocity.y = -400;
+            bug.body.velocity.x = this.game.rnd.integerInRange(20, 80) * this.game.rnd.sign();
+            bug.body.allowGravity = true;
 
             this.audio.bug.play();
         }
@@ -110,9 +191,13 @@ class Coding extends Phaser.State {
 
 
     completedIdea() {
+        
         this.isCompleted = true;
         this.audio.completedIdea.play();
+
+        GameManager.stopTimer();
         this.time.events.add(Phaser.Timer.SECOND * 2, () => this.game.state.start('game'));
+
     }
 
 
@@ -124,32 +209,34 @@ class Coding extends Phaser.State {
 
 
     updateText() {
-        this.ideaText.text = 'Name: ' + GameManager.name + 
-            '\nIdea: ' + this.idea.genre +
-            '\nCompleted: ' + Math.floor(this.idea.devCompleted / this.idea.devNeeded * 100) + '%';
+        
+        this.instrText.text = this.idea.genre.toUpperCase() + 
+            '\nType mechanics' +
+            '\nas fast as possible';
+
     }
 
     updateBar() {
 
-        const barWidth = 100;
-        const barHeight = 10;
+        const barWidth = this.barWidth;
+        const barHeight = this.barHeight;
         const factCompleted = this.idea.devCompleted / this.idea.devNeeded;
-        
-        this.completionBar.beginFill(0xffffff, 1);
-        this.completionBar.drawRect(0, 0, barWidth + SCALE * 2, barHeight + SCALE * 2);
-        this.completionBar.drawRect(0, barHeight + SCALE * 2 + barHeight, barWidth + SCALE*2, barHeight + SCALE*2);
 
-        this.completionBar.beginFill(0x00ff00, 1);
-        this.completionBar.drawRect(SCALE, SCALE, Math.floor(barWidth*factCompleted), barHeight);
+        drawBar(this.completionBar, 0, 0, barWidth + SCALE * 2, barHeight + SCALE * 2, factCompleted);
 
-        this.completionBar.beginFill(this.isDanger ? 0xff0000 : 0x00ff00, 1);
-        this.completionBar.drawRect(SCALE, SCALE + barHeight + SCALE * 2 + barHeight, Math.floor(barWidth * this.factIntensity), barHeight);
-        this.completionBar.endFill();
+        const intensityColor = this.isDanger ? 0xff0000 : 0x00ff00;
+        drawBar(this.completionBar, 0, barHeight + SCALE * 2 + barHeight, barWidth + SCALE*2, barHeight + SCALE*2, this.factIntensity, intensityColor);
 
     }
 
 
     update() {
+
+        this.bugs.forEachAlive(bug => {
+            if (bug.y > this.game.height)
+                bug.kill();
+        })
+
         if (this.isResting)
             this.intensity -= 0.0005;
         else

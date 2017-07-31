@@ -1,5 +1,8 @@
 import GameManager, { SCALE } from '../entities/GameManager';
 import crispLine from '../utils/bresenham';
+import drawBar from '../utils/drawBar';
+import button from '../utils/button';
+
 
 class Drawing extends Phaser.State {
 
@@ -37,6 +40,9 @@ class Drawing extends Phaser.State {
         this.input.onDown.add(this.onMouseDown, this);
         this.input.onUp.add(this.onMouseUp, this);
 
+        GameManager.startTimer();
+        
+
     }
 
 
@@ -48,9 +54,12 @@ class Drawing extends Phaser.State {
             0, 0,
             'a\nb', { 
                 fill: '#fff',
+                align: 'center',
+                boundsAlignH: 'right',
                 boundsAlignV: 'middle'
             });
-        this.instrText.setTextBounds(this.sheet.x + this.sheet.width + 10, 0, this.game.width, this.game.height);
+        //this.instrText.setTextBounds(this.sheet.x + this.sheet.width + 10, 0, this.game.width, this.game.height);
+        this.instrText.setTextBounds(0, this.sheet.y, Math.floor(this.game.width / 2 - this.sheet.width / 2 - 40), this.sheet.height);
         this.instrText.setShadow(0, 3, 'rgba(0,0,0,.5)', 0);
         this.instrText.fixedToCamera = true;
 
@@ -58,6 +67,22 @@ class Drawing extends Phaser.State {
         this.completionBar.fixedToCamera = true;
 
         this.updateBar();
+
+        this.createStopBtn();
+
+    }
+
+
+    createStopBtn() {
+
+        this.stopBtn = button(
+            this.game,
+            Math.floor(this.game.width / 2 + this.sheet.width / 2 + 40),
+            Math.floor(this.game.height / 2 - 30),
+            150, 60,
+            'Stop',
+            () => this.game.state.start('game')
+        );
 
     }
 
@@ -210,9 +235,14 @@ class Drawing extends Phaser.State {
 
 
     completedIdea() {
+        
         this.isCompleted = true;
         this.audio.completedIdea.play();
+        this.stopBtn.kill();
+
+        GameManager.stopTimer();
         this.time.events.add(Phaser.Timer.SECOND * 2, () => this.game.state.start('game'));
+        
     }
 
 
@@ -245,19 +275,15 @@ class Drawing extends Phaser.State {
 
     updateBar() {
 
-        this.completionBar.beginFill(0xffffff, 1);
-        this.completionBar.drawRect(0, 0, this.sheet.width + SCALE * 2, this.barHeight + SCALE*2);
-
         const sheetFactCompleted = Math.min(this.sheetCompletion, this.minToComplete) / this.minToComplete;
-        this.completionBar.beginFill(0x00ff00, 1);
-        this.completionBar.drawRect(SCALE, SCALE, Math.floor(this.sheet.width * sheetFactCompleted), this.barHeight);
-        this.completionBar.beginFill(0, 0.5);
-        this.completionBar.drawRect(SCALE, SCALE, this.sheet.width, SCALE);
-        this.completionBar.drawRect(SCALE, SCALE * 2, SCALE, this.barHeight - SCALE);
-        this.completionBar.endFill();
+        drawBar(this.completionBar, 0, 0, this.sheet.width + SCALE * 2, this.barHeight + SCALE * 2, sheetFactCompleted);
 
         const assetsToDraw = this.idea.drawNeeded - this.idea.drawCompleted;
         this.instrText.text = assetsToDraw > 0 ? `Draw ${assetsToDraw} assets\nas fast as you can` : 'All assets completed!';
+        if (assetsToDraw === 0) {
+            this.instrText.boundsAlignH = 'center';
+            this.instrText.setTextBounds(0, 0, this.game.width, this.game.height);
+        }
 
     }
 
