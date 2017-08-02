@@ -15,7 +15,7 @@ class Flappy extends Phaser.State {
     this.lastTube = null;
 
     this.tubeCount = 12;
-    this.gapHeight = 2;
+    this.gapHeight = 3;
     this.tubeHeight = 8 * SCALE;
     this.tubeDistance = 200;
     this.initDistance = 300;

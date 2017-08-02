@@ -24,7 +24,7 @@ class Game extends Phaser.State {
         var btnDistance = 16*SCALE + 10;//16*SCALE*2;
         var btnWidth = (btns -1 ) * btnDistance;
         var btnX = Math.floor(this.game.width / 2 + this.desk.width / 2 + 80);
-        var btnY = (this.game.width / 2) - (this.desk.height / 2) - 40;
+        var btnY = Math.floor(this.game.height / 2) - 60 + 8*SCALE;//(this.game.height / 2) - (this.desk.height / 2) - 40;
 
         this.createIdeaBtn(btnX, Math.floor(btnY));
         this.createCodeBtn(btnX, Math.floor(btnY += btnDistance));
